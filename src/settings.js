@@ -1,7 +1,7 @@
 module.exports = {
 
 
-  title: '二次开发后台系统',
+  title: '梦学谷博客权限管理系统',
 
   /**
    * @type {boolean} true | false
