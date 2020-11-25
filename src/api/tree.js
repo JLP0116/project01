@@ -1,17 +1,18 @@
 import request from "@/utils/request"
 export default {
     // 分页条件查询分类列表 
-    getList(query, current = 1, size = 20) {
+    getList(formInline, current = 1, size = 20) {
         return request({ // Promise
             url: `/article/category/search`,
             method: 'post',
             data: { // {name: '前端', status: 1, current: current, size: size}
-                ...query,
+                ...formInline,
                 current,
                 size
             }
         })
     },
+    // 添加
     getAdd(addList) {
         var name = addList.name
         var status = addList.status

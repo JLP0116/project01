@@ -25,19 +25,18 @@ module.exports = {
       warnings: false,
       errors: true
     },
-    before: require('./mock/mock-server.js')
+    before: require('./mock/mock-server.js'),
+    proxy:{
+      '/dev-api':{
+        'target':'http://mengxuegu.com:7300/mock/5f114e0544ef223bad8c9827/blog-admin',//localhost:3000',
+        changeOrigin:true,    //表示是否跨域，
+        pathRewrite:{           //表示需要rewrite重写的
+            '^/dev-api':' ',
+        }
+      }
+    },
   },
-// proxy:{
-//   [process.env.VUE_APP_BASE_API]:{ //接口在.env.development  文件夹
-//     // 目标服务器地址
-//     target:'http://mengxuegu.com:7300/mock/5f114e0544ef223bad8c9827/blog-admin',
-//     changeOrigin:true,    //开启代理服务器
-//     pathRewrite:{
-//       // "^/dev-api",
-//       ['^'+process.env.VUE_APP_BASE_API]:''
-//     }
-//   }
-// },
+
 
 
   configureWebpack: {

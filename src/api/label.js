@@ -2,14 +2,10 @@ import request from "@/utils/request"
 export default {
     // 分页条件查询分类列表 
     getList(query, current = 1, size = 20) {
-        return request({ // Promise
+        return request({
             url: `/article/label/search`,
             method: 'post',
-            data: { // {name: '前端', status: 1, current: current, size: size}
-                ...query,
-                current,
-                size
-            }
+            data: { ...query, current, size } // 合并成一个对象
         })
     },
     getAdd(addList) {
@@ -33,7 +29,7 @@ export default {
     },
     // 修改
     edit(item) {
-        var id =item.id
+        var id = item.id
         var name = item.name
         var status = item.status
         var sort = item.sort

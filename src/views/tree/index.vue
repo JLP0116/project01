@@ -5,9 +5,14 @@
         <el-input v-model="formInline.user"></el-input>
       </el-form-item>
       <el-form-item label="状态">
-        <el-select v-model="formInline.state" placeholder="请选择">
-          <el-option label="正常" value="shanghai"></el-option>
-          <el-option label="禁用" value="beijing"></el-option>
+        <el-select v-model="formInline.state" filterable placeholder="请选择">
+          <el-option
+            v-for="item in status"
+            :key="item.statusCode"
+            :label="item.statusText"
+            :value="item.statusCode"
+          >
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -39,12 +44,16 @@
         </el-table-column>
         <el-table-column label="状态">
           <template slot-scope="scope">
-            {{ scope.row.status ? "启用" : "禁用" }}
+            <el-tag :type="scope.row.status | filterStatus">
+              {{ scope.row.status ? "正常" : "禁用" }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="280">
           <template slot-scope="scope">
-            <el-button type="success" @click="onEdit(scope.row)">编辑</el-button>
+            <el-button type="success" @click="onEdit(scope.row)"
+              >编辑</el-button
+            >
             <el-button type="danger" @click="onRemoce(scope.row.id)"
               >删除</el-button
             >
@@ -109,11 +118,22 @@
 </template>
 <script>
 import api from "@/api/tree.js";
+const status = [
+  {
+    statusCode: 0,
+    statusText: "禁用"
+  },
+  {
+    statusCode: 1,
+    statusText: "正常"
+  }
+];
 export default {
   data() {
     return {
       // 新增弹窗
       addShow: false,
+      status,
       addList: {
         name: "",
         status: "",
@@ -131,7 +151,7 @@ export default {
         status: "",
         sort: "",
         remark: "",
-        id:""
+        id: ""
       },
       list: [],
       page: {
@@ -140,8 +160,6 @@ export default {
         size: 10, // 每页显示多少条
         total: 0 // 总记录数
       },
-
-      query: {} // 查询条件
     };
   },
   mounted() {
@@ -150,14 +168,14 @@ export default {
   methods: {
     // 获取数据
     fetchData() {
-       const loading = this.$loading({
-          lock: true,
-          text: 'Loading',
-          spinner: 'el-icon-loading',
-          background: 'rgba(0, 0, 0, 0.7)'
-        });
+      const loading = this.$loading({
+        lock: true,
+        text: "Loading",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)"
+      });
       api
-        .getList(this.query, this.page.current, this.page.size)
+        .getList(this.formInline, this.page.current, this.page.size)
         .then(response => {
           console.log(response);
           // 列表数据
@@ -167,7 +185,8 @@ export default {
         });
     },
     onSubmit() {
-      console.log("submit!");
+      this.size=1;
+      this.fetchData()
     },
     // 添加
     onAdd() {
@@ -195,40 +214,52 @@ export default {
       }
     },
     //重置
-    onReset(){
-      this.fetchData()
+    onReset() {
+      this.fetchData();
     },
     // 删除
     onRemoce(id) {
-      console.log(id);
-      api.remove(id).then(res => {
-        this.$message({
-          message: res.message,
-          type: "warning"
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          api.remove(id).then(res => {
+            this.$message({
+              message: res.message,
+              type: "warning"
+            });
+            this.fetchData();
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
         });
-        this.fetchData();
-      });
     },
     // 编辑
-    onEdit(item){
-      this.editShow=true;
-      this.editList.name=item.name;
-      this.editList.status=item.status;
-      this.editList.sort=item.sort;
-      this.editList.remark=item.remark;
-      this.editList.id=item.id
+    onEdit(item) {
+      this.editShow = true;
+      this.editList.name = item.name;
+      this.editList.status = item.status;
+      this.editList.sort = item.sort;
+      this.editList.remark = item.remark;
+      this.editList.id = item.id;
       console.log(item);
     },
-    onEditx(){
-      api.edit(this.editList).then(res=>{
+    onEditx() {
+      api.edit(this.editList).then(res => {
         console.log(res);
         this.$message({
-          message:res.message,
-          type: 'success'
+          message: res.message,
+          type: "success"
         });
-        this.editShow=false;
-        this.fetchData()
-      })
+        this.editShow = false;
+        this.fetchData();
+      });
     },
     handleSizeChange(val) {
       this.page.size = val;
@@ -240,11 +271,16 @@ export default {
       this.page.current = val;
       this.fetchData();
     }
+  },
+  filters: {
+    filterStatus(status) {
+      return status == 0 ? "danger" : "success";
+    }
   }
 };
 </script>
 <style lang="scss">
-    .el-table .cell{
-        text-align: center;
-    }
+.el-table .cell {
+  text-align: center;
+}
 </style>

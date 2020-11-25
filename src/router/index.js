@@ -30,13 +30,13 @@ export const constantRoutes = [
       meta: { title: '首页', icon: 'dashboard' }
     }]
   },
-// 博客管理
+  // 博客管理
   {
     path: '/example',
     component: Layout,
     redirect: '/example/table',
     name: 'Example',
-    meta: { title: '博客管理', icon:  'el-icon-notebook-2' },
+    meta: { title: '博客管理', icon: 'el-icon-notebook-2' },
     children: [
       {
         path: 'table',
@@ -54,11 +54,12 @@ export const constantRoutes = [
         path: 'label',
         name: 'Label',
         component: () => import('@/views/label'),
-        meta: { title: '标签管理', icon: 'el-icon-collection-tag' }
+        meta: { title: '标签管理', icon: 'el-icon-collection-tag' },
       }
     ]
   },
-// 广告管理
+
+  // 广告管理
   {
     path: '/form',
     component: Layout,
@@ -71,7 +72,7 @@ export const constantRoutes = [
       }
     ]
   },
-// 系统管理
+  // 系统管理
   {
     path: '/nested',
     component: Layout,
@@ -87,20 +88,20 @@ export const constantRoutes = [
         name: 'User',
         component: () => import('@/views/nested/user/index'),
         meta: { title: '用户管理', icon: 'el-icon-user-solid' }
-        },
-        {
-          path: 'role',
-          name: 'Role',
-          component: () => import('@/views/nested/role/index'),
-          meta: { title: '角色管理', icon: 'el-icon-coin' }
-          },
-          {
-            path: 'menu',
-            name: 'Menu',
-            component: () => import('@/views/nested/menu/index'),
-            meta: { title: '菜单管理', icon: 'el-icon-menu' }
-            }
-     
+      },
+      {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/nested/role/index'),
+        meta: { title: '角色管理', icon: 'el-icon-coin' }
+      },
+      {
+        path: 'menu',
+        name: 'Menu',
+        component: () => import('@/views/nested/menu/index'),
+        meta: { title: '菜单管理', icon: 'el-icon-menu' }
+      }
+
     ]
   },
 

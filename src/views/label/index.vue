@@ -1,13 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form :inline="true" :model="formInline" class="demo-form-inline">
+    <el-form :inline="true" :model="query" class="demo-form-inline">
       <el-form-item label="标签名称">
-        <el-input v-model="formInline.user"></el-input>
+        <el-input v-model="query.name"></el-input>
       </el-form-item>
-      <el-form-item label="状态">
-        <el-select v-model="formInline.state" placeholder="请选择">
-          <el-option label="正常" value="shanghai"></el-option>
-          <el-option label="禁用" value="beijing"></el-option>
+      <el-form-item label="分类名称">
+        <el-select v-model="query.categoryName" filterable placeholder="请选择">
+          <el-option
+            v-for="(item,index) in options"
+            :key="index"
+            :label="item"
+            :value="index"
+          >
+          </el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -111,10 +116,6 @@ export default {
         sort: "",
         remark: ""
       },
-      formInline: {
-        user: "",
-        state: ""
-      },
       // 编辑内容
       editShow: false,
       editList: {
@@ -133,10 +134,14 @@ export default {
         total: 0 // 总记录数
       },
 
-      query: {} // 查询条件
+      query: {
+        name:"",
+        categoryName:""
+      }, // 查询条件
+      options:[]
     };
   },
-  mounted() {
+  created() {
     this.fetchData();
   },
   methods: {
@@ -158,13 +163,18 @@ export default {
           this.list = response.data.records;
           this.listx = response.data.records;
           this.page.total = response.data.total;
+          this.options=[]
+          this.list.forEach(item=>{
+            this.options.push(item.categoryName)
+          });
         });
     },
     onSubmit() {
       console.log("submit!");
     },
     onQuery() {
-      console.log("查询");
+      this.size=1
+      this.fetchData()
     },
     // 添加
     onAdd() {
@@ -190,13 +200,26 @@ export default {
     },
     // 删除
     onRemoce(id) {
-      api.remove(id).then(res => {
-        this.$message({
-          message: res.message,
-          type: "warning"
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          api.remove(id).then(res => {
+            this.$message({
+              message: res.message,
+              type: "warning"
+            });
+            this.fetchData();
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
         });
-        this.fetchData();
-      });
     },
     // 编辑
     onEdit(item) {
