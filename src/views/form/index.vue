@@ -1,120 +1,189 @@
 <template>
-  <div class="form">
-    <!-- 表格 -->
-    <template>
-      <el-table :data="list" border style="width: 100%">
-        <el-table-column type="index" label="序号" width="50">
-        </el-table-column>
-        <el-table-column prop="title" label="广告标题" width="180">
-        </el-table-column>
-        <el-table-column prop="name" label="广告图片" width="180">
-          <template slot-scope="scope">
-            <img :src="scope.row.imageUrl" alt="" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="advertUrl" label="广告连接" width="180">
-        </el-table-column>
-        <el-table-column prop="name" label="状态" width="180">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.status | filterStatus">
-              {{ scope.row.status ? "正常" : "禁用" }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="sort" label="排序" width="180">
-        </el-table-column>
-        <el-table-column prop="name" label="操作"> 
-           <el-button>编辑</el-button>
-           <el-button type="danger">删除</el-button>
-        </el-table-column>
-      </el-table>
-    </template>
-    <!-- 分页器 -->
-    <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="page.current"
-      :page-sizes="[10, 20, 50]"
-      :page-size="page.size"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="page.total"
-     />
-  </div>
+    <div class="app-container">
+        <!-- 条件查询 -->
+        <el-form :inline="true" :model="query" size="mini">
+            <el-form-item label="广告标题:">
+                <el-input v-model.trim="query.title" ></el-input>
+            </el-form-item>
+            <el-form-item label="状态:">
+                <el-select v-model="query.status" clearable filterable style="width: 85px">
+                    <el-option 
+                        v-for="item in statusOptions" :key="item.code" 
+                        :label="item.name" :value="item.code">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item>
+                <el-button icon="el-icon-search" type="primary" @click="queryData">查询</el-button>
+                <el-button icon="el-icon-refresh"  @click="reload">重置</el-button>
+                <el-button icon="el-icon-circle-plus-outline" type="primary" @click="openAdd" >新增</el-button>
+            </el-form-item>
+        </el-form>
+
+
+        <el-table
+            :data="list"
+            stripe
+            border
+            style="width: 100%">
+            <el-table-column  align="center" type="index" label="序号" width="60"></el-table-column>
+            <el-table-column  align="center" prop="title" label="广告标题" ></el-table-column>
+            <el-table-column  align="center" prop="imageUrl" label="广告图片" >
+                <template slot-scope="scope">
+                    <el-image style="width: 90px; height: 60px"
+                        :src="scope.row.imageUrl" 
+                        :preview-src-list="[scope.row.imageUrl]">
+                    </el-image>
+                </template>
+            </el-table-column>
+            <el-table-column  align="center" prop="advertUrl" label="广告链接" ></el-table-column>
+            <el-table-column  align="center" prop="status" label="状态" >
+                <template slot-scope="scope">
+                    <el-tag v-if="scope.row.status === 0" type="danger">禁用</el-tag>
+                    <el-tag v-if="scope.row.status === 1" type="success">正常</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column  align="center" prop="sort" label="排序" ></el-table-column>
+            <el-table-column  align="center" label="操作" >
+                <template slot-scope="scope">
+                    <el-button type="success" @click="handleEdit(scope.row.id)" size="mini">编辑</el-button>
+                    <el-button type="danger"  @click="handleDelete(scope.row.id)"  size="mini">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+
+
+        <!-- 分页组件 -->
+         <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="page.current"
+            :page-sizes="[10, 20, 50]"
+            :page-size="page.size"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="page.total">
+        </el-pagination>
+
+        <edit :title="edit.title" :visible="edit.visible" 
+        :formData="edit.formData" :remoteClose="remoteClose"
+        :oldImageUrl="edit.oldImageUrl"
+        />
+    </div>
 </template>
-
 <script>
-import api from "@/api/form.js";
-const status = [
-  {
-    statusCode: 0,
-    statusText: "禁用"
-  },
-  {
-    statusCode: 1,
-    statusText: "正常"
-  }
-];
+
+import api from '@/api/form'
+
+import Edit from './Popup'
+
+const statusOptions = [
+    {code: 0, name: '禁用'},
+    {code: 1, name: '正常'}
+]
+
+
 export default {
-  data() {
-    return {
-      status,
-      list: [],
-      page: {
-        // 分页对象
-        current: 1, // 当前页码
-        size: 10, // 每页显示多少条
-        total: 0 // 总记录数
-      }
-    };
-  },
-  mounted() {
-    this.formList();
-  },
-  methods: {
-    formList() {
-      const loading = this.$loading({
-        lock: true,
-        text: "Loading",
-        spinner: "el-icon-loading",
-        background: "rgba(0, 0, 0, 0.7)"
-      });
-      api
-        .getList(this.formInline, this.page.current, this.page.size)
-        .then(response => {
-          console.log(response);
-          // 列表数据
-          loading.close();
-          this.list = response.data.records;
-          this.page.total = response.data.total;
-        });
+    name: 'Advert', // 和对应路由表中配置的name值一致
+    
+    components: {Edit},
+
+    data() {
+        return {
+            list: [],
+            page: {
+                current: 1,
+                size: 20,
+                total: 0
+            },
+            query: {}, // 查询条件
+            statusOptions, // 状态
+            edit: {
+                title: '',
+                visible: false,
+                formData: {
+                    imageUrl: null ,
+                },
+                oldImageUrl: null,
+            }
+        }
     },
 
-     handleSizeChange(val) {
-      this.page.size = val;
-      this.formList();
+    created() {
+        this.fetchData()
     },
 
-    // 当页码改变后触发到此方法，val 是当前点击（或输入）的那个页码，
-    handleCurrentChange(val) {
-      this.page.current = val;
-      this.formList();
+    methods: {
+        async fetchData() {
+            const {data} = await api.getList(this.query, this.page.current, this.page.size)
+            this.page.total = data.total
+            this.list = data.records
+        },
+
+        // 编辑
+        async handleEdit(id) {
+            const response = await api.getById(id)
+            if(response.code === 20000){
+                this.edit.formData = response.data;
+                this.edit.oldImageUrl = response.data.imageUrl;
+                this.edit.visible = true;
+                this.edit.title = '编辑';
+            }
+        },
+
+        // 删除
+        handleDelete(id) {
+           this.$confirm('确认删除这条记录吗?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                api.deleteById(id).then(response => {
+                    this.$message({
+                        type: response.code === 20000 ? 'success': 'error',
+                        message: response.message
+                    })
+                })
+                this.fetchData()
+            }).catch(() => {  
+            });
+        },
+
+        // val 是切换之后的每页显示多少条
+        handleSizeChange(val) {
+            this.page.size = val
+            this.fetchData()
+        },
+
+        // 当页码改变后触发到此方法，val 是当前点击（或输入）的那个页码，
+        handleCurrentChange(val) {
+            this.page.current = val
+            this.fetchData()
+        },
+
+        // 条件查询
+        queryData() {
+            this.page.current = 1
+            this.fetchData()
+        },
+
+        // 重置
+        reload() {
+            this.query = {}
+            this.fetchData()
+        },
+
+        // 打开窗口
+        openAdd() {
+            this.edit.visible = true
+            this.edit.title = '新增'
+        },
+        // 关闭窗口
+        remoteClose() {
+            this.edit.formData = {imageUrl: null}
+            this.edit.visible = false
+            this.fetchData()
+        }
+
     }
-  },
-  filters: {
-    filterStatus(status) {
-      return status == 0 ? "danger" : "success";
-    }
-  }
-};
-</script>
-<style lang="scss">
-.form {
-  padding: 10px 20px;
-  img {
-    height: 60px;
-  }
-  .el-table .cell{
-    text-align: center;
-  }
 }
-</style>
+</script>
