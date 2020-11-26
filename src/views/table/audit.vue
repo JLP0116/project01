@@ -87,29 +87,24 @@ export default {
     methods: {
         // 关闭窗口
         handleClose() {
-            // 触发父组件关闭窗口
             this.remoteClose()
         },
 
-        // 审核通过触发的方法
+        // 审核
         auditSuccess() {
             this.$confirm('确认审核通过吗?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                // 发送审核通过请求
                api.auditSuccess(this.id).then(response => {
-                   // 提示信息
                    this.$message({
                         type: 'success',
                         message: '审核通过!'
                     })
-                    // 关闭弹窗
                     this.remoteClose()
                })
             }).catch(() => {
-                // 取消删除，不用理会        
             })
         },
 
@@ -120,18 +115,14 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                // 发送审核通过请求
                api.auditFail(this.id).then(response => {
-                   // 提示信息
                    this.$message({
                         type: 'success',
                         message: '审核不通过!'
                     })
-                    // 关闭弹窗
                     this.remoteClose()
                })
             }).catch(() => {
-                // 取消删除，不用理会        
             })
         },
 
@@ -143,8 +134,7 @@ export default {
 
         async getLabelOptions() {
            const {data} = await categoryApi.getCategoryAndLabel()
-           this.labelOptions = data
-        //    console.log('this.labelOptions', this.labelOptions)
+           this.labelOptions = data;
         }
 
     }

@@ -5,7 +5,7 @@ import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: "/dev-api", 
+  baseURL: "/dev-api",
   timeout: 5000 // request timeout
 })
 
@@ -29,6 +29,7 @@ service.interceptors.request.use(
 // response interceptor
 service.interceptors.response.use(
   response => {
+
     const res = response.data
     if (res.code !== 20000) {
       Message({
