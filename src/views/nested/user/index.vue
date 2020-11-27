@@ -54,7 +54,6 @@
         prop="isAccountNonExpired"
         label="帐号过期"
       >
-        <!-- (1 未过期，0已过期) -->
         <template slot-scope="scope">
           <el-tag v-if="scope.row.isAccountNonExpired === 0" type="danger"
             >过期</el-tag
@@ -69,7 +68,6 @@
         prop="isAccountNonLocked"
         label="帐号锁定"
       >
-        <!-- (1 未锁定，0已锁定) -->
         <template slot-scope="scope">
           <el-tag v-if="scope.row.isAccountNonLocked === 0" type="danger"
             >锁定</el-tag
@@ -84,7 +82,6 @@
         prop="isCredentialsNonExpired"
         label="密码过期"
       >
-        <!-- (1 未过期，0已过期) -->
         <template slot-scope="scope">
           <el-tag v-if="scope.row.isCredentialsNonExpired === 0" type="danger"
             >过期</el-tag
@@ -95,7 +92,6 @@
         </template>
       </el-table-column>
       <el-table-column align="center" prop="isEnabled" label="是否可用">
-        <!-- (1 可用，0 删除用户) -->
         <template slot-scope="scope">
           <el-tag v-if="scope.row.isEnabled === 0" type="danger">已删除</el-tag>
           <el-tag v-if="scope.row.isEnabled === 1" type="success">可用</el-tag>
@@ -210,7 +206,7 @@ export default {
 
   methods: {
     async fetchData() {
-        const loading = this.$loading({
+      const loading = this.$loading({
         lock: true,
         text: "Loading",
         spinner: "el-icon-loading",
@@ -223,7 +219,7 @@ export default {
       );
       this.list = data.records;
       this.page.total = data.total;
-      loading.close()
+      loading.close();
     },
 
     // val 是切换之后的每页显示多少条
